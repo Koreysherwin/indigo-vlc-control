@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Devices>
+	<Device type="custom" id="vlcPlayer">
+		<Name>VLC Player</Name>
+		<ConfigUI>
+			<Field id="updateFrequency" type="menu" defaultValue="1">
+				<Label>Update Frequency:</Label>
+				<List>
+					<Option value="0.5">Every 0.5 seconds</Option>
+					<Option value="1">Every 1 second</Option>
+					<Option value="2">Every 2 seconds</Option>
+					<Option value="5">Every 5 seconds</Option>
+					<Option value="10">Every 10 seconds</Option>
+				</List>
+			</Field>
+			<Field id="updateVariables" type="checkbox" defaultValue="false">
+				<Label>Update Indigo Variables:</Label>
+				<Description>Create/update Indigo variables with VLC data</Description>
+			</Field>
+			<Field id="variablePrefix" type="textfield" defaultValue="VLC">
+				<Label>Variable Prefix:</Label>
+				<Description>Prefix for created variables (e.g., "VLC" creates "VLCTrackName")</Description>
+			</Field>
+		</ConfigUI>
+		<States>
+			<!-- Playback State -->
+			<State id="playerState">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Player State</TriggerLabel>
+				<ControlPageLabel>Player State</ControlPageLabel>
+			</State>
+			<State id="isPlaying">
+				<ValueType boolType="OnOff">Boolean</ValueType>
+				<TriggerLabel>Is Playing</TriggerLabel>
+				<ControlPageLabel>Is Playing</ControlPageLabel>
+			</State>
+			<State id="isPaused">
+				<ValueType boolType="OnOff">Boolean</ValueType>
+				<TriggerLabel>Is Paused</TriggerLabel>
+				<ControlPageLabel>Is Paused</ControlPageLabel>
+			</State>
+			<State id="isStopped">
+				<ValueType boolType="OnOff">Boolean</ValueType>
+				<TriggerLabel>Is Stopped</TriggerLabel>
+				<ControlPageLabel>Is Stopped</ControlPageLabel>
+			</State>
+			
+			<!-- Media Information -->
+			<State id="mediaName">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Media Name</TriggerLabel>
+				<ControlPageLabel>Media Name</ControlPageLabel>
+			</State>
+			<State id="mediaPath">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Media Path</TriggerLabel>
+				<ControlPageLabel>Media Path</ControlPageLabel>
+			</State>
+			
+			<!-- Playback Position and Duration -->
+			<State id="currentTime">
+				<ValueType>Number</ValueType>
+				<TriggerLabel>Current Time (seconds)</TriggerLabel>
+				<ControlPageLabel>Time (s)</ControlPageLabel>
+			</State>
+			<State id="currentTimeFormatted">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Current Time (formatted)</TriggerLabel>
+				<ControlPageLabel>Time</ControlPageLabel>
+			</State>
+			<State id="duration">
+				<ValueType>Number</ValueType>
+				<TriggerLabel>Duration (seconds)</TriggerLabel>
+				<ControlPageLabel>Duration (s)</ControlPageLabel>
+			</State>
+			<State id="durationFormatted">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Duration (formatted)</TriggerLabel>
+				<ControlPageLabel>Duration</ControlPageLabel>
+			</State>
+			<State id="progressPercent">
+				<ValueType>Number</ValueType>
+				<TriggerLabel>Progress Percentage</TriggerLabel>
+				<ControlPageLabel>Progress %</ControlPageLabel>
+			</State>
+			
+			<!-- Volume and Audio -->
+			<State id="audioVolume">
+				<ValueType>Number</ValueType>
+				<TriggerLabel>Volume</TriggerLabel>
+				<ControlPageLabel>Volume</ControlPageLabel>
+			</State>
+			<State id="muted">
+				<ValueType boolType="OnOff">Boolean</ValueType>
+				<TriggerLabel>Muted</TriggerLabel>
+				<ControlPageLabel>Muted</ControlPageLabel>
+			</State>
+			
+			<!-- Playback Options -->
+			<State id="fullscreen">
+				<ValueType boolType="OnOff">Boolean</ValueType>
+				<TriggerLabel>Fullscreen</TriggerLabel>
+				<ControlPageLabel>Fullscreen</ControlPageLabel>
+			</State>
+			<State id="looping">
+				<ValueType boolType="OnOff">Boolean</ValueType>
+				<TriggerLabel>Looping</TriggerLabel>
+				<ControlPageLabel>Loop</ControlPageLabel>
+			</State>
+			<State id="random">
+				<ValueType boolType="OnOff">Boolean</ValueType>
+				<TriggerLabel>Random</TriggerLabel>
+				<ControlPageLabel>Random</ControlPageLabel>
+			</State>
+			
+			<!-- Display Status -->
+			<State id="status">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Status Display</TriggerLabel>
+				<ControlPageLabel>Status</ControlPageLabel>
+			</State>
+		</States>
+		<UiDisplayStateId>status</UiDisplayStateId>
+	</Device>
+</Devices>

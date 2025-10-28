@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Actions>
+	<!-- Playback Control Actions -->
+	<Action id="play" deviceFilter="self">
+		<n>Play</n>
+		<CallbackMethod>actionPlay</CallbackMethod>
+	</Action>
+	
+	<Action id="pause" deviceFilter="self">
+		<n>Pause</n>
+		<CallbackMethod>actionPause</CallbackMethod>
+	</Action>
+	
+	<Action id="playpause" deviceFilter="self">
+		<n>Play/Pause Toggle</n>
+		<CallbackMethod>actionPlayPause</CallbackMethod>
+	</Action>
+	
+	<Action id="stop" deviceFilter="self">
+		<n>Stop</n>
+		<CallbackMethod>actionStop</CallbackMethod>
+	</Action>
+	
+	<Action id="next" deviceFilter="self">
+		<n>Next</n>
+		<CallbackMethod>actionNext</CallbackMethod>
+	</Action>
+	
+	<Action id="previous" deviceFilter="self">
+		<n>Previous</n>
+		<CallbackMethod>actionPrevious</CallbackMethod>
+	</Action>
+	
+	<!-- Volume Control Actions -->
+	<Action id="setVolume" deviceFilter="self">
+		<n>Set Volume</n>
+		<CallbackMethod>actionSetVolume</CallbackMethod>
+		<ConfigUI>
+			<Field id="volume" type="textfield" defaultValue="50">
+				<Label>Volume (0-100):</Label>
+			</Field>
+		</ConfigUI>
+	</Action>
+	
+	<Action id="volumeUp" deviceFilter="self">
+		<n>Volume Up</n>
+		<CallbackMethod>actionVolumeUp</CallbackMethod>
+		<ConfigUI>
+			<Field id="amount" type="textfield" defaultValue="10">
+				<Label>Amount to increase (0-100):</Label>
+			</Field>
+		</ConfigUI>
+	</Action>
+	
+	<Action id="volumeDown" deviceFilter="self">
+		<n>Volume Down</n>
+		<CallbackMethod>actionVolumeDown</CallbackMethod>
+		<ConfigUI>
+			<Field id="amount" type="textfield" defaultValue="10">
+				<Label>Amount to decrease (0-100):</Label>
+			</Field>
+		</ConfigUI>
+	</Action>
+	
+	<Action id="mute" deviceFilter="self">
+		<n>Mute</n>
+		<CallbackMethod>actionMute</CallbackMethod>
+	</Action>
+	
+	<Action id="unmute" deviceFilter="self">
+		<n>Unmute</n>
+		<CallbackMethod>actionUnmute</CallbackMethod>
+	</Action>
+	
+	<!-- Position Control Actions -->
+	<Action id="stepForward" deviceFilter="self">
+		<n>Step Forward</n>
+		<CallbackMethod>actionStepForward</CallbackMethod>
+		<ConfigUI>
+			<Field id="step" type="menu" defaultValue="short">
+				<Label>Step Size:</Label>
+				<List>
+					<Option value="extrashort">Extra Short (3 seconds)</Option>
+					<Option value="short">Short (10 seconds)</Option>
+					<Option value="medium">Medium (1 minute)</Option>
+					<Option value="long">Long (5 minutes)</Option>
+				</List>
+			</Field>
+		</ConfigUI>
+	</Action>
+	
+	<Action id="stepBackward" deviceFilter="self">
+		<n>Step Backward</n>
+		<CallbackMethod>actionStepBackward</CallbackMethod>
+		<ConfigUI>
+			<Field id="step" type="menu" defaultValue="short">
+				<Label>Step Size:</Label>
+				<List>
+					<Option value="extrashort">Extra Short (3 seconds)</Option>
+					<Option value="short">Short (10 seconds)</Option>
+					<Option value="medium">Medium (1 minute)</Option>
+					<Option value="long">Long (5 minutes)</Option>
+				</List>
+			</Field>
+		</ConfigUI>
+	</Action>
+	
+	<Action id="jumpTo" deviceFilter="self">
+		<n>Jump To Position</n>
+		<CallbackMethod>actionJumpTo</CallbackMethod>
+		<ConfigUI>
+			<Field id="position" type="textfield" defaultValue="0">
+				<Label>Position (seconds):</Label>
+			</Field>
+		</ConfigUI>
+	</Action>
+	
+	<!-- Playback Options Actions -->
+	<Action id="setFullscreen" deviceFilter="self">
+		<n>Set Fullscreen</n>
+		<CallbackMethod>actionSetFullscreen</CallbackMethod>
+		<ConfigUI>
+			<Field id="fullscreenState" type="menu" defaultValue="toggle">
+				<Label>Fullscreen State:</Label>
+				<List>
+					<Option value="on">On</Option>
+					<Option value="off">Off</Option>
+					<Option value="toggle">Toggle</Option>
+				</List>
+			</Field>
+		</ConfigUI>
+	</Action>
+	
+	<Action id="setLoop" deviceFilter="self">
+		<n>Set Loop</n>
+		<CallbackMethod>actionSetLoop</CallbackMethod>
+		<ConfigUI>
+			<Field id="loopState" type="menu" defaultValue="toggle">
+				<Label>Loop State:</Label>
+				<List>
+					<Option value="on">On</Option>
+					<Option value="off">Off</Option>
+					<Option value="toggle">Toggle</Option>
+				</List>
+			</Field>
+		</ConfigUI>
+	</Action>
+	
+	<Action id="setRandom" deviceFilter="self">
+		<n>Set Random</n>
+		<CallbackMethod>actionSetRandom</CallbackMethod>
+		<ConfigUI>
+			<Field id="randomState" type="menu" defaultValue="toggle">
+				<Label>Random State:</Label>
+				<List>
+					<Option value="on">On</Option>
+					<Option value="off">Off</Option>
+					<Option value="toggle">Toggle</Option>
+				</List>
+			</Field>
+		</ConfigUI>
+	</Action>
+	
+	<!-- Media Selection Actions -->
+	<Action id="openMedia" deviceFilter="self">
+		<n>Open Media File</n>
+		<CallbackMethod>actionOpenMedia</CallbackMethod>
+		<ConfigUI>
+			<Field id="mediaPath" type="textfield">
+				<Label>File Path:</Label>
+				<Description>Full path to media file (e.g., /Users/username/Movies/video.mp4)</Description>
+			</Field>
+		</ConfigUI>
+	</Action>
+	
+	<Action id="openURL" deviceFilter="self">
+		<n>Open URL</n>
+		<CallbackMethod>actionOpenURL</CallbackMethod>
+		<ConfigUI>
+			<Field id="url" type="textfield">
+				<Label>URL:</Label>
+				<Description>HTTP/HTTPS stream URL</Description>
+			</Field>
+		</ConfigUI>
+	</Action>
+	
+	<!-- Playback Speed Actions -->
+	<Action id="setPlaybackRate" deviceFilter="self">
+		<n>Set Playback Rate</n>
+		<CallbackMethod>actionSetPlaybackRate</CallbackMethod>
+		<ConfigUI>
+			<Field id="rate" type="menu" defaultValue="normal">
+				<Label>Playback Rate:</Label>
+				<List>
+					<Option value="veryslow">0.25x (Very Slow)</Option>
+					<Option value="slow">0.5x (Slow)</Option>
+					<Option value="normal">1.0x (Normal)</Option>
+					<Option value="fast">1.5x (Fast)</Option>
+					<Option value="veryfast">2.0x (Very Fast)</Option>
+				</List>
+			</Field>
+		</ConfigUI>
+	</Action>
+	
+	<!-- Update Action -->
+	<Action id="updateNow" deviceFilter="self">
+		<n>Update Now</n>
+		<CallbackMethod>actionUpdateNow</CallbackMethod>
+	</Action>
+</Actions>
