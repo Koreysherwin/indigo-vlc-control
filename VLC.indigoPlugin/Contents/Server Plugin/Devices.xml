@@ -3,7 +3,19 @@
 	<Device type="custom" id="vlcPlayer">
 		<Name>VLC Player</Name>
 		<ConfigUI>
-			<Field id="updateFrequency" type="menu" defaultValue="1">
+			<Field id="httpHost" type="textfield" defaultValue="localhost">
+				<Label>HTTP Host:</Label>
+				<Description>VLC HTTP interface host (usually localhost)</Description>
+			</Field>
+			<Field id="httpPort" type="textfield" defaultValue="8080">
+				<Label>HTTP Port:</Label>
+				<Description>VLC HTTP interface port (default 8080)</Description>
+			</Field>
+			<Field id="httpPassword" type="textfield" defaultValue="">
+				<Label>HTTP Password:</Label>
+				<Description>VLC HTTP interface password (set in VLC preferences)</Description>
+			</Field>
+			<Field id="updateFrequency" type="menu" defaultValue="5">
 				<Label>Update Frequency:</Label>
 				<List>
 					<Option value="0.5">Every 0.5 seconds</Option>
@@ -19,11 +31,10 @@
 			</Field>
 			<Field id="variablePrefix" type="textfield" defaultValue="VLC">
 				<Label>Variable Prefix:</Label>
-				<Description>Prefix for created variables (e.g., "VLC" creates "VLCTrackName")</Description>
+				<Description>Prefix for created variables</Description>
 			</Field>
 		</ConfigUI>
 		<States>
-			<!-- Playback State -->
 			<State id="playerState">
 				<ValueType>String</ValueType>
 				<TriggerLabel>Player State</TriggerLabel>
@@ -44,8 +55,6 @@
 				<TriggerLabel>Is Stopped</TriggerLabel>
 				<ControlPageLabel>Is Stopped</ControlPageLabel>
 			</State>
-			
-			<!-- Media Information -->
 			<State id="mediaName">
 				<ValueType>String</ValueType>
 				<TriggerLabel>Media Name</TriggerLabel>
@@ -56,8 +65,6 @@
 				<TriggerLabel>Media Path</TriggerLabel>
 				<ControlPageLabel>Media Path</ControlPageLabel>
 			</State>
-			
-			<!-- Playback Position and Duration -->
 			<State id="currentTime">
 				<ValueType>Number</ValueType>
 				<TriggerLabel>Current Time (seconds)</TriggerLabel>
@@ -83,8 +90,6 @@
 				<TriggerLabel>Progress Percentage</TriggerLabel>
 				<ControlPageLabel>Progress %</ControlPageLabel>
 			</State>
-			
-			<!-- Volume and Audio -->
 			<State id="audioVolume">
 				<ValueType>Number</ValueType>
 				<TriggerLabel>Volume</TriggerLabel>
@@ -95,8 +100,6 @@
 				<TriggerLabel>Muted</TriggerLabel>
 				<ControlPageLabel>Muted</ControlPageLabel>
 			</State>
-			
-			<!-- Playback Options -->
 			<State id="fullscreen">
 				<ValueType boolType="OnOff">Boolean</ValueType>
 				<TriggerLabel>Fullscreen</TriggerLabel>
@@ -112,8 +115,6 @@
 				<TriggerLabel>Random</TriggerLabel>
 				<ControlPageLabel>Random</ControlPageLabel>
 			</State>
-			
-			<!-- Display Status -->
 			<State id="status">
 				<ValueType>String</ValueType>
 				<TriggerLabel>Status Display</TriggerLabel>

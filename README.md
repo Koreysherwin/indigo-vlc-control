@@ -1,171 +1,105 @@
 # VLC Control for Indigo
 
-Control and monitor VLC media player on the Mac running Indigo.
-
-**Repository source version: 1.0.1.** The checked-in plugin uses AppleScript through macOS `osascript`. It does **not** contain the HTTP-based 2.1.0 implementation described in the existing changelog. If you use a newer HTTP-based build, these instructions do not apply to that build.
+Version **2.1.0** — control VLC playback and report media status through VLC's HTTP interface.
 
 ## Requirements
 
-- A Mac running Indigo with Python 3 plugin support (the plugin declares Server API 3.0).
-- VLC installed on the same Mac as Indigo Server.
-- Permission for the Indigo server process to control VLC and System Events through macOS Automation.
-- Media accessible to the account running VLC.
+- Indigo 2022.1 or later (Server API 3.0), with Python 3.
+- VLC with its HTTP web interface enabled and reachable from Indigo Server.
+- Local files must be accessible on the computer running VLC.
 
-Compatibility with specific Indigo, macOS, and VLC releases must be verified on the target system; this repository review did not include a live playback test.
+## Install
 
-## Installation
+1. Download [VLC-Control-v2.1.0.zip](VLC-Control-v2.1.0.zip) and unzip it.
+2. Double-click **VLC.indigoPlugin** to install and enable it in Indigo.
+3. Open VLC and configure its HTTP interface as below.
 
-1. Choose **Code → Download ZIP** on this repository and expand the download.
-2. Open the `vlc-control` folder.
-3. Double-click `VLC.indigoPlugin` and accept Indigo's installation prompts.
-4. Enable the plugin in Indigo; restart it if prompted.
+**Identifier change:** this build uses `com.sherwinsound.vlccontrol`, replacing `com.indigodomo.vlc`. Indigo treats these as different plugins. Disable the old plugin and recreate or reassign VLC devices and automation references as needed. Keep a backup of your Indigo database before migrating.
 
-There are currently no published GitHub releases. The repository also contains `VLC-Control-v1.0.1.zip`, but its contents have not been checked against the expanded source. Use the expanded source bundle above for the version documented here.
+## Configure VLC
 
-## VLC and macOS setup
+In VLC Preferences, select **Show All** to display advanced settings (wording varies by platform/version):
 
-1. Open VLC on the Indigo Server Mac.
-2. Load a local audio/video file and confirm it plays normally.
-3. Leave VLC running while testing Indigo.
-4. Accept macOS prompts allowing the Indigo server process to control VLC and System Events.
-5. If permission was denied, review **System Settings → Privacy & Security → Automation**. Older macOS versions place these settings under System Preferences.
+1. Under **Interface → Main interfaces**, enable **Web** / **HTTP**.
+2. Under **Interface → Main interfaces → Lua**, set a **Lua HTTP password**.
+3. Save preferences and restart VLC.
+4. From the Indigo Server computer, open `http://localhost:8080/requests/status.json`. Use the VLC host address instead of localhost if VLC runs elsewhere.
+5. When prompted, leave the username empty and enter the HTTP password. A successful connection displays JSON.
 
-This source version requires no VLC web interface, HTTP password, IP address, or port. It controls the local VLC application only.
+Use this interface on a trusted local network; it uses unencrypted HTTP. Do not forward its port to the internet.
 
-## Create an Indigo device
+## Create the Indigo device
 
-1. In Indigo, create a new device.
-2. Select the **VLC Control** plugin and **VLC Player** model.
-3. Configure:
+Create a device using the **VLC Control** plugin and **VLC Player** model.
 
-| Setting | Function |
+| Setting | Value |
 | --- | --- |
-| Update Frequency | Poll every 0.5, 1, 2, 5, or 10 seconds; default 1 second. Start with 5 seconds to reduce repeated AppleScript calls. |
-| Update Indigo Variables | Optionally copy device states into Indigo variables. |
-| Variable Prefix | Default `VLC`; for example, `VLCMediaName` and `VLCIsPlaying`. |
+| HTTP Host | `localhost` for VLC on the Indigo Mac; otherwise the VLC computer's hostname or IP |
+| HTTP Port | `8080`, unless changed in VLC |
+| HTTP Password | The Lua HTTP password set in VLC |
+| Update Frequency | Default 5 seconds; code enforces a minimum of 2 seconds |
+| Update Indigo Variables | Optional |
+| Variable Prefix | Default `VLC` |
 
-4. Save the device and inspect its states.
-5. Run **Update Now** to request a fresh status reading.
+The menu still includes 0.5- and 1-second polling choices, but both run at the enforced 2-second minimum.
 
-All devices created with this version address the same local VLC application. Creating additional Indigo devices does not provide separate zones or network VLC instances. Use distinct variable prefixes if enabling variables on multiple devices.
+Save the device, load media in VLC, and execute **Update Now**. Each device can address a separately configured VLC HTTP endpoint.
 
-## Use actions
+## Use in Indigo
 
-In an Indigo action group, schedule, trigger, or Control Page button, choose the VLC Control plugin action and select your VLC Player device. Exact menu wording varies by Indigo version.
+Choose a VLC Control action in an action group, trigger, schedule, or Control Page button and select your VLC device.
 
-| Actions | Purpose |
+| Actions | Function |
 | --- | --- |
 | Play, Pause, Play/Pause Toggle, Stop | Playback control |
-| Next, Previous | Navigate VLC's loaded playlist |
-| Set Volume, Volume Up, Volume Down | Adjust audio level; see limitations below |
-| Mute, Unmute | Audio muting; see limitations below |
-| Step Forward, Step Backward | Relative seeking; selectable step sizes are not implemented |
-| Jump To Position | Seek to a position expressed in seconds |
-| Set Fullscreen | On, off, or toggle |
-| Set Loop, Set Random | On, off, or toggle |
-| Open Media File | Open a path on the VLC Mac, such as `/Users/yourname/Movies/movie.mp4` |
-| Open URL | Open a stream URL supported by VLC |
-| Set Playback Rate | Choose 0.25, 0.5, 1, 1.5, or 2 times normal speed |
-| Update Now | Refresh device states immediately |
+| Next, Previous | Navigate the playlist |
+| Set Volume, Volume Up, Volume Down | Adjust the plugin's 0–100 volume scale |
+| Mute, Unmute | Set volume to zero / restore remembered level (default 50 if unavailable) |
+| Step Forward, Step Backward | Seek by 3, 10, 60, or 300 seconds |
+| Jump To Position | Seek to a position in seconds |
+| Set Fullscreen, Set Loop, Set Random | Toggle the corresponding option; see limitations |
+| Open Media File | Play an absolute file path on the VLC computer |
+| Open URL | Play a stream URL |
+| Update Now | Refresh states immediately |
 
-Use plain numeric input for volume, amount, and position. These fields do not have comprehensive input validation.
+For example, create an action group with **Open Media File** and enter `/Users/yourname/Music/example.mp3`. For streams, use **Open URL** with the stream address.
 
-### Example: play a local file
+For automation, trigger when `isPlaying` becomes true. For a Control Page, display `mediaName`, `currentTimeFormatted`, and `durationFormatted`, with buttons for Play/Pause Toggle and Stop.
 
-1. Create an action group in Indigo.
-2. Add **Open Media File** for your VLC device.
-3. Enter the file's absolute path.
-4. Execute the action group and check playback in VLC.
+## States and variables
 
-Paths containing double quotes or backslashes can fail because the current code inserts paths directly into AppleScript strings.
+States include `playerState`, `isPlaying`, `isPaused`, `isStopped`, `mediaName`, `mediaPath`, `currentTime`, `duration`, `currentTimeFormatted`, `durationFormatted`, `progressPercent`, `audioVolume`, `muted`, `fullscreen`, `looping`, `random`, and `status`.
 
-### Example: Control Page
+Optional variables use an underscore: `VLC_mediaName`, `VLC_isPlaying`, etc. Values are strings. The code requests the **VLC Control** variable folder; if variable creation fails, check that folder and Indigo's Event Log.
 
-- Add buttons linked to action groups for Play/Pause Toggle, Stop, Next, and Previous.
-- Display `mediaName` for the current title.
-- Display `currentTimeFormatted` and `durationFormatted` for elapsed and total time.
-- Use Set Volume for volume controls, accounting for the scaling limitation below.
+## Current limitations
 
-### Example: trigger when playback starts
+This repository preserves the supplied working 2.1.0 Python and XML files.
 
-Create a device-state-change trigger for the VLC device's `isPlaying` state becoming true, then add your lighting or other actions.
-
-State changes are detected by polling. Do not rely on `progressPercent = 100` as an end-of-media trigger: polling can miss the final position, and live streams may have no known duration.
-
-## Device states
-
-| State | Meaning |
-| --- | --- |
-| `playerState` | `playing`, `paused`, or `stopped`; pause/stop is inferred |
-| `isPlaying`, `isPaused`, `isStopped` | Boolean playback indicators |
-| `mediaName`, `mediaPath` | Current media title and path |
-| `currentTime`, `duration` | Position and length in seconds |
-| `currentTimeFormatted`, `durationFormatted` | Readable time values |
-| `progressPercent` | Calculated percentage when duration is known |
-| `audioVolume` | Raw value returned by VLC's AppleScript interface |
-| `muted` | Reported mute status |
-| `fullscreen`, `looping`, `random` | Reported playback options |
-| `status` | Summary text shown on the Indigo device |
-
-Optional Indigo variables capitalize the first letter of the state name and add the prefix: `mediaName` becomes `VLCMediaName`. Values are stored as strings; boolean values become `True` or `False`. Variables are created or updated after a successful status read.
-
-## Known limitations in the checked-in source
-
-- **HTTP version missing:** the changelog's 2.1.0 entry does not match `Info.plist`, device settings, or Python code.
-- **Step-size selection is ignored:** every forward option issues the same AppleScript command, as do all backward options. The advertised 3-second, 10-second, 1-minute, and 5-minute choices are not implemented.
-- **Mute acts as a toggle:** invoking Mute again can unmute VLC. Unmute relies on the last polled mute state.
-- **Volume scales are inconsistent:** Set Volume converts 0–100 to 0–256, while the reported state is not converted back. Volume Up/Down repeat VLC commands rather than applying an exact percentage change.
-- **Paused versus stopped is inferred:** nonplaying media with a nonempty name is classified as paused, which can misidentify a stopped item.
-- **Metadata parsing is fragile:** AppleScript records are split on commas without accounting for quoted text. Media names or paths containing commas can be misread.
-- **Failed polls can leave stale states:** status failures are logged rather than consistently marking the device offline.
-- **AppleScript calls have no timeout:** an unresponsive macOS automation request can delay polling or actions.
-- **Local control only:** no remote-host settings or independent multi-zone control are present.
-
-These are source-review findings, not results of a live test on a Mac.
+- Fullscreen, loop, and random actions toggle even when On or Off is selected.
+- Set Playback Rate currently has a mismatch: the UI supplies named values such as `normal`, while the handler expects a numeric value. This action needs a code correction before use.
+- Pause and stopped states are inferred from playback and media name, so a stopped loaded item can appear paused.
+- `mediaPath` is taken from filename metadata and may not be a full path.
+- Volume is mapped to VLC HTTP values 0–320; the plugin's percentage may differ from VLC's displayed percentage.
+- Repeated Mute actions can replace the remembered volume with zero.
+- HTTP failures are reported as VLC not running, including incorrect passwords or unreachable endpoints.
+- End-of-media progress can be missed between polls; do not depend on reaching exactly 100%.
 
 ## Troubleshooting
 
-### No updates or controls
+- **VLC not running / no updates:** confirm VLC is open, Web/HTTP is enabled, the password matches, and the JSON URL works from Indigo Server.
+- **HTTP 401:** check the Lua HTTP password and use an empty username.
+- **Connection refused:** restart VLC after enabling Web and confirm its port.
+- **Remote VLC:** check host address, firewall, and VLC HTTP access restrictions.
+- **No variables:** enable variable updates, check the VLC Control variable folder, and review the Event Log.
+- Enable debug logging in plugin configuration for HTTP error details. Remove credentials from logs before sharing.
 
-- Confirm VLC is running on the same Mac as Indigo Server.
-- Load a simple local file and verify VLC plays it directly.
-- Review macOS Automation permissions for VLC and System Events.
-- Execute Update Now and inspect Indigo's Event Log.
-- Try a 5- or 10-second polling interval.
+## Support
 
-### Media information does not update
+[Report an issue](https://github.com/Koreysherwin/indigo-vlc-control/issues).
 
-A VLC AppleScript property error can make the entire status request fail. Check the Indigo log, try a different local file, and avoid commas in the test filename to isolate record-parsing problems.
+Plugin identifier: `com.sherwinsound.vlccontrol`. PluginVersion: `2.1.0`.
 
-### Variables do not appear
+For Indigo Store releases, the release tag version must match PluginVersion in the source archive at that tag. Keep this README at repository root.
 
-Enable Update Indigo Variables and run Update Now. Variables are created only after a successful status read. Check the prefix and Indigo log for naming errors.
-
-### File or stream will not open
-
-Confirm the file exists and is readable by the VLC account, or test the stream URL directly in VLC. Avoid embedded double quotes and backslashes in action input until string escaping is fixed.
-
-## Repository and release notes
-
-The current plugin is located at:
-
-`vlc-control/VLC.indigoPlugin`
-
-Both `PluginVersion` and `CFBundleVersion` in its `Contents/Info.plist` are `1.0.1`. The identifier is currently `com.indigodomo.vlc`; preserve it for existing installations unless planning a deliberate identifier migration.
-
-Before submitting a GitHub release to the Indigo Plugin Store:
-
-1. Confirm the repository contains the intended working plugin source.
-2. Align the changelog, README, and plist versions.
-3. Create the release from the commit containing that version; for example, tag `v1.0.1` for `PluginVersion` `1.0.1`.
-4. Check the **source archive at the release tag**, because replacing an attached plugin ZIP does not change the source archive.
-5. Keep a README at repository root so it is present at the top level of GitHub's source archive.
-6. Attach an installable plugin ZIP built from the same source.
-
-No release was created as part of this documentation update.
-
-## Support and license
-
-Report problems through [GitHub Issues](https://github.com/Koreysherwin/indigo-vlc-control/issues). Include Indigo/macOS/VLC versions, the failing action, and relevant Indigo log entries. Remove private paths or stream credentials before posting.
-
-See [LICENSE](vlc-control/LICENSE) and the [existing changelog](vlc-control/CHANGELOG.md). The nested README files are older documentation; use this root README for the checked-in 1.0.1 source.
+See [LICENSE](LICENSE).
