@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 VLC Control Plugin for Indigo
-Version 2.1.0 - HTTP REST API preferred mode
+Version 2.1.1 - HTTP REST API preferred mode
 """
 
 import indigo
@@ -44,7 +44,7 @@ class Plugin(indigo.PluginBase):
         return True
         
     def startup(self):
-        self.debugLog(u"VLC Plugin v2.1.0 startup")
+        self.debugLog(u"VLC Plugin v2.1.1 startup")
         self.debugLog(u"HTTP REST API is now enforced for polling and actions")
         
     def shutdown(self):
@@ -146,6 +146,7 @@ class Plugin(indigo.PluginBase):
             # Playing state
             state = status.get('state', 'stopped')
             result['playing'] = 1 if state == 'playing' else 0
+            result['playerState'] = state
             
             # Current item info
             info = status.get('information', {})
@@ -390,19 +391,13 @@ end tell
         isPlaying = playingState == 1
         mediaName = result.get('mediaName', '')
         
-        if isPlaying:
-            playerState = 'playing'
-            isPaused = False
-            isStopped = False
-        elif mediaName:
-            playerState = 'paused'
-            isPaused = True
-            isStopped = False
-        else:
-            playerState = 'stopped'
-            isPaused = False
-            isStopped = True
-        
+        playerState = result.get('playerState')
+        if playerState not in ('playing', 'paused', 'stopped'):
+            playerState = 'playing' if isPlaying else ('paused' if mediaName else 'stopped')
+        isPlaying = playerState == 'playing'
+        isPaused = playerState == 'paused'
+        isStopped = playerState == 'stopped'
+
         stateList.append({'key': 'playerState', 'value': playerState})
         stateList.append({'key': 'isPlaying', 'value': isPlaying})
         stateList.append({'key': 'isPaused', 'value': isPaused})
@@ -520,8 +515,23 @@ end tell
         self.makeHttpRequest(dev, "status.json", {'command': 'volume', 'val': vlcVolume})
     
     def actionSetFullscreenHTTP(self, dev, fullscreen):
-        self.sendCommandHTTP(dev, 'fullscreen')
+        self.setOptionHTTP(dev, 'fullscreen', 'fullscreen', 'on' if fullscreen else 'off')
     
+    def setOptionHTTP(self, dev, key, command, desired):
+        """Read live VLC state before sending a toggle for an explicit On/Off."""
+        if desired not in ('on', 'off', 'toggle'):
+            self.errorLog('Invalid option state: {}'.format(desired))
+            return
+        if desired == 'toggle':
+            self.sendCommandHTTP(dev, command)
+            return
+        status = self.makeHttpRequest(dev, 'status.json')
+        if status is None or key not in status:
+            self.errorLog('Cannot read VLC {} state; command not sent'.format(key))
+            return
+        if bool(status[key]) != (desired == 'on'):
+            self.sendCommandHTTP(dev, command)
+
     def actionSeekHTTP(self, dev, position):
         self.makeHttpRequest(dev, "status.json", {'command': 'seek', 'val': position})
     
@@ -664,34 +674,31 @@ end tell
         self.updateVLCStatus(dev)
         
     def actionMute(self, pluginAction, dev):
+        status = self.makeHttpRequest(dev, 'status.json')
+        if status is None:
+            self.errorLog('Cannot read VLC volume; mute not sent')
+            return
+        volume = int(status.get('volume', 0))
         devInfo = self.deviceDict.get(dev.id)
-        if devInfo:
-            currentVolume = int(dev.states.get('audioVolume', 50))
-            devInfo['previousVolume'] = currentVolume
-        
-        connectionMethod = "http"
-        if connectionMethod == "http":
-            self.actionSetVolumeHTTP(dev, 0)
-        else:
-            self.actionSetVolumeAppleScript(dev, 0)
-        time.sleep(0.2)
+        if volume > 0:
+            if devInfo is not None:
+                devInfo['previousVolume'] = volume
+            self.makeHttpRequest(dev, 'status.json', {'command': 'volume', 'val': 0})
         self.updateVLCStatus(dev)
-        
+
     def actionUnmute(self, pluginAction, dev):
-        devInfo = self.deviceDict.get(dev.id)
-        if devInfo and devInfo['previousVolume'] is not None:
-            volume = devInfo['previousVolume']
-        else:
-            volume = 50
-        
-        connectionMethod = "http"
-        if connectionMethod == "http":
-            self.actionSetVolumeHTTP(dev, volume)
-        else:
-            self.actionSetVolumeAppleScript(dev, volume)
-        time.sleep(0.2)
+        status = self.makeHttpRequest(dev, 'status.json')
+        if status is None:
+            self.errorLog('Cannot read VLC volume; unmute not sent')
+            return
+        if int(status.get('volume', 0)) == 0:
+            devInfo = self.deviceDict.get(dev.id, {})
+            volume = devInfo.get('previousVolume')
+            if volume is None or volume <= 0:
+                volume = 160  # Existing default of 50% on the plugin scale.
+            self.makeHttpRequest(dev, 'status.json', {'command': 'volume', 'val': volume})
         self.updateVLCStatus(dev)
-        
+
     def actionStepForward(self, pluginAction, dev):
         step = pluginAction.props.get('step', 'short')
         currentTime = int(dev.states.get('currentTime', 0))
@@ -732,39 +739,17 @@ end tell
         self.updateVLCStatus(dev)
         
     def actionSetFullscreen(self, pluginAction, dev):
-        fullscreenState = pluginAction.props.get('fullscreenState', 'toggle')
-        if fullscreenState == 'toggle':
-            currentFullscreen = dev.states.get('fullscreen', False)
-            fullscreenState = 'off' if currentFullscreen else 'on'
-        
-        fullscreen = (fullscreenState == 'on')
-        
-        connectionMethod = "http"
-        if connectionMethod == "http":
-            self.actionSetFullscreenHTTP(dev, fullscreen)
-        else:
-            self.actionSetFullscreenAppleScript(dev, fullscreen)
-        time.sleep(0.2)
+        self.setOptionHTTP(dev, 'fullscreen', 'fullscreen', pluginAction.props.get('fullscreenState', 'toggle'))
         self.updateVLCStatus(dev)
-        
+
     def actionSetLoop(self, pluginAction, dev):
-        connectionMethod = "http"
-        if connectionMethod == "http":
-            self.sendCommandHTTP(dev, 'pl_loop')
-        else:
-            self.logger.info(u"Loop control not supported by VLC AppleScript")
-        time.sleep(0.2)
+        self.setOptionHTTP(dev, 'loop', 'pl_loop', pluginAction.props.get('loopState', 'toggle'))
         self.updateVLCStatus(dev)
-        
+
     def actionSetRandom(self, pluginAction, dev):
-        connectionMethod = "http"
-        if connectionMethod == "http":
-            self.sendCommandHTTP(dev, 'pl_random')
-        else:
-            self.logger.info(u"Random control not supported by VLC AppleScript")
-        time.sleep(0.2)
+        self.setOptionHTTP(dev, 'random', 'pl_random', pluginAction.props.get('randomState', 'toggle'))
         self.updateVLCStatus(dev)
-        
+
     def actionOpenMedia(self, pluginAction, dev):
         mediaPath = pluginAction.props.get('mediaPath', '')
         if mediaPath:
@@ -796,7 +781,15 @@ end tell
             self.updateVLCStatus(dev)
         
     def actionSetPlaybackRate(self, pluginAction, dev):
-        rate = float(pluginAction.props.get('rate', 1.0))
+        raw = pluginAction.props.get('rate', 'normal')
+        named_rates = {'veryslow': 0.25, 'slow': 0.5, 'normal': 1.0, 'fast': 1.5, 'veryfast': 2.0}
+        try:
+            rate = named_rates[raw] if raw in named_rates else float(raw)
+            if not 0.25 <= rate <= 2.0:
+                raise ValueError('rate out of range')
+        except (ValueError, TypeError):
+            self.errorLog('Invalid playback rate: {}'.format(raw))
+            return
         connectionMethod = "http"
         if connectionMethod == "http":
             self.makeHttpRequest(dev, "status.json", {'command': 'rate', 'val': rate})
@@ -807,3 +800,4 @@ end tell
         
     def actionUpdateNow(self, pluginAction, dev):
         self.updateVLCStatus(dev)
+

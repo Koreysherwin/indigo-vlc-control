@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.1.1
+
+- Fix named playback-rate selections and accept numeric values.
+- Honor On/Off/Toggle using live VLC state for fullscreen, loop, and random.
+- Preserve exact volume across repeated Mute/Unmute actions.
+- Report paused and stopped directly from VLC HTTP status.
+- Include the VLC icon in the installable ZIP.
+
+
 ## 2.1.0
 
 - Import the supplied working HTTP plugin, replacing the older repository source.
@@ -12,3 +21,4 @@
 ## 1.0.1
 
 - Earlier AppleScript-based repository version.
+

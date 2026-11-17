@@ -1,6 +1,6 @@
 # VLC Control for Indigo
 
-Version **2.1.0** — control VLC playback and report media status through VLC's HTTP interface.
+Version **2.1.1** — control VLC playback and report media status through VLC's HTTP interface.
 
 ## Requirements
 
@@ -10,7 +10,7 @@ Version **2.1.0** — control VLC playback and report media status through VLC's
 
 ## Install
 
-1. Download [VLC-Control-v2.1.0.zip](VLC-Control-v2.1.0.zip) and unzip it.
+1. Download [VLC-Control-v2.1.1.zip](VLC-Control-v2.1.1.zip) and unzip it.
 2. Double-click **VLC.indigoPlugin** to install and enable it in Indigo.
 3. Open VLC and configure its HTTP interface as below.
 
@@ -54,12 +54,13 @@ Choose a VLC Control action in an action group, trigger, schedule, or Control Pa
 | Play, Pause, Play/Pause Toggle, Stop | Playback control |
 | Next, Previous | Navigate the playlist |
 | Set Volume, Volume Up, Volume Down | Adjust the plugin's 0–100 volume scale |
-| Mute, Unmute | Set volume to zero / restore remembered level (default 50 if unavailable) |
+| Mute, Unmute | Set volume to zero / restore exact remembered level (default 50% if unavailable); repeated calls preserve the level |
 | Step Forward, Step Backward | Seek by 3, 10, 60, or 300 seconds |
 | Jump To Position | Seek to a position in seconds |
-| Set Fullscreen, Set Loop, Set Random | Toggle the corresponding option; see limitations |
+| Set Fullscreen, Set Loop, Set Random | Set On, Off, or Toggle |
 | Open Media File | Play an absolute file path on the VLC computer |
 | Open URL | Play a stream URL |
+| Set Playback Rate | Choose 0.25x, 0.5x, 1x, 1.5x, or 2x |
 | Update Now | Refresh states immediately |
 
 For example, create an action group with **Open Media File** and enter `/Users/yourname/Music/example.mp3`. For streams, use **Open URL** with the stream address.
@@ -74,14 +75,10 @@ Optional variables use an underscore: `VLC_mediaName`, `VLC_isPlaying`, etc. Val
 
 ## Current limitations
 
-This repository preserves the supplied working 2.1.0 Python and XML files.
+Version 2.1.1 fixes playback-rate selection, explicit On/Off controls, mute restoration, and paused/stopped reporting.
 
-- Fullscreen, loop, and random actions toggle even when On or Off is selected.
-- Set Playback Rate currently has a mismatch: the UI supplies named values such as `normal`, while the handler expects a numeric value. This action needs a code correction before use.
-- Pause and stopped states are inferred from playback and media name, so a stopped loaded item can appear paused.
 - `mediaPath` is taken from filename metadata and may not be a full path.
 - Volume is mapped to VLC HTTP values 0–320; the plugin's percentage may differ from VLC's displayed percentage.
-- Repeated Mute actions can replace the remembered volume with zero.
 - HTTP failures are reported as VLC not running, including incorrect passwords or unreachable endpoints.
 - End-of-media progress can be missed between polls; do not depend on reaching exactly 100%.
 
@@ -98,8 +95,9 @@ This repository preserves the supplied working 2.1.0 Python and XML files.
 
 [Report an issue](https://github.com/Koreysherwin/indigo-vlc-control/issues).
 
-Plugin identifier: `com.sherwinsound.vlccontrol`. PluginVersion: `2.1.0`.
+Plugin identifier: `com.sherwinsound.vlccontrol`. PluginVersion: `2.1.1`.
 
 For Indigo Store releases, the release tag version must match PluginVersion in the source archive at that tag. Keep this README at repository root.
 
 See [LICENSE](LICENSE).
+
