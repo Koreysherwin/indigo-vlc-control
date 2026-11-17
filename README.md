@@ -14,8 +14,6 @@ Version **2.1.1** — control VLC playback and report media status through VLC's
 2. Double-click **VLC.indigoPlugin** to install and enable it in Indigo.
 3. Open VLC and configure its HTTP interface as below.
 
-**Identifier change:** this build uses `com.sherwinsound.vlccontrol`, replacing `com.indigodomo.vlc`. Indigo treats these as different plugins. Disable the old plugin and recreate or reassign VLC devices and automation references as needed. Keep a backup of your Indigo database before migrating.
-
 ## Configure VLC
 
 In VLC Preferences, select **Show All** to display advanced settings (wording varies by platform/version):
